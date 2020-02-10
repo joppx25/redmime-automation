@@ -44,3 +44,5 @@ typings/
 .next
 # Resourses image
 resourses/*
+# Secret keys & token
+keys/*
