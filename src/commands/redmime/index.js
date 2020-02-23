@@ -25,17 +25,17 @@ let questions = [
     {
         type: 'input',
         name: 'nResults',
-        message: 'How many results do you want to retrieve? (default 1)'  
+        message: 'How many results do you want to retrieve? (default 1)'
     },
     {
         type: 'input',
         name: 'dateFrom',
-        message: 'Start date (YYYY-MM-DD)? (default 3 months ago)'  
+        message: 'Start date (YYYY-MM-DD)? (default today)'
     },
     {
         type: 'input',
         name: 'dateTo',
-        message: 'End Date (YYYY-MM-DD)? (default today)'  
+        message: 'End Date (YYYY-MM-DD)? (default today)'
     },
     {
         type: 'input',
@@ -66,7 +66,29 @@ async function execGmailAPI (options) {
         console.log('Getting email content');
         
         const mails = await gmail.getEmailList(oAuthClient, options);
+        // get the tasks and percentage done
+        let tasks = getTasks(mails.message);
     } catch(err) {
-        
+        console.log(err);
+        process.exit(-1);
     }
+}
+
+function getTasks (message) {
+    let splitMessage = message.split('\r\n');
+    let tasks        = [];
+
+    splitMessage.forEach((str, idx) => {
+        if (str.indexOf('*Tasks:') >= 0) {
+            let cloneIdx = idx;
+            while (splitMessage[cloneIdx + 1].indexOf('*Expected date:') < 0) {
+                let cleanMsg = splitMessage[idx + 1].replace(/\*|\-/g, '').replace(/^\s+|\s+&/g, '');
+                tasks.push(cleanMsg);
+                cloneIdx++;
+            }
+            return;
+        }
+    });
+
+    return tasks;
 }
