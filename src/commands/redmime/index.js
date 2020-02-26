@@ -5,6 +5,7 @@ const path            = require('path');
 const moment          = require('moment');
 const googleAuth      = require('../../google/googleAuth');
 const gmail           = require('../../google/gmail');
+const crawler         = require('../../Crawler');
 
 /** Getting secret credential */
 const secretFile = path.join(__dirname, '../../../keys/client_secret.json');
@@ -53,7 +54,8 @@ inquirer.prompt(questions).then(async answers => {
         params : answers['extraParam']  || '',
     }
     console.log('Searching with options: %j ', options); 
-    return await execGmailAPI(options);
+    let tasks = await execGmailAPI(options);
+    await execRedmimeCrawler(tasks);
 
 }).catch(err => {
     console.log('Error retrieving events from the calendar' + err);
@@ -66,12 +68,16 @@ async function execGmailAPI (options) {
         console.log('Getting email content');
         
         const mails = await gmail.getEmailList(oAuthClient, options);
-        // get the tasks and percentage done
-        let tasks = getTasks(mails.message);
+        // get the tasks
+        return getTasks(mails.message);
     } catch(err) {
         console.log(err);
         process.exit(-1);
     }
+}
+
+async function execRedmimeCrawler (tasks) {
+    
 }
 
 function getTasks (message) {
